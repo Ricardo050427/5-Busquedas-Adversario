@@ -33,10 +33,12 @@ import minimax
 
 class Othello(js.JuegoZT2):
     def inicializa(self):
-        """
-        fixme no inicializa en puros ceros
-        """
-        return tuple([0 for _ in range(8 * 8)])
+        s = [0] * 64
+        s[27] = -1
+        s[36] = -1
+        s[28] = 1
+        s[35] = 1
+        return tuple(s)
 
     def jugadas_legales(self, s, j):
         return (pos for pos in range(8 * 8) if s[pos] == 0)
