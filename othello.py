@@ -52,23 +52,12 @@ class Othello(js.JuegoZT2):
         return tuple(s)
 
     def ganancia(self, s):
-        # Verticales
-        for i in range(7):
-            for j in range(3):
-                if (s[i + 7 * j] == s[i + 7 * (j + 1)] == s[i + 7 * (j + 2)] == s[i + 7 * (j + 3)] != 0):
-                    return s[i + 7 * j]
-        # Horizontales
-        for i in range(6):
-            for j in range(4):
-                if (s[7 * i + j] == s[7 * i + j + 1] == s[7 * i + j + 2] == s[7 * i + j + 3] != 0):
-                    return s[7 * i + j]
-        # Diagonales
-        for i in range(4):
-            for j in range(3):
-                if (s[i + 7 * j] == s[i + 7 * j + 8] == s[i + 7 * j + 16] == s[i + 7 * j + 24] != 0):
-                    return s[i + 7 * j]
-                if (s[i + 7 * j + 3] == s[i + 7 * j + 9] == s[i + 7 * j + 15] == s[i + 7 * j + 21] != 0):
-                    return s[i + 7 * j + 3]
+        """
+        fixme posible ganancia
+        """
+        suma_total = sum(s)
+        if suma_total > 0: return 1
+        if suma_total < 0: return -1
         return 0
 
     def terminal(self, s):
