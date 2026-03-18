@@ -30,7 +30,6 @@ empate.
 import juegos_simplificado as js
 import minimax
 
-
 class Othello(js.JuegoZT2):
     def inicializa(self):
         s = [0] * 64
@@ -41,7 +40,35 @@ class Othello(js.JuegoZT2):
         return tuple(s)
 
     def jugadas_legales(self, s, j):
-        return (pos for pos in range(8 * 8) if s[pos] == 0)
+        jugadas = []
+        direcciones = [
+            (-1, -1), (-1, 0), (-1, 1),  # Arriba-Izquierda, Arriba, Arriba-Derecha
+            (0, -1), (0, 1),  # Izquierda, Derecha
+            (1, -1), (1, 0), (1, 1)  # Abajo-Izquierda, Abajo, Abajo-Derecha
+        ]
+
+        for pos in range(64):
+            if s[pos] == 0:
+                fila_orig = pos // 8
+                col_orig = pos % 8
+                es_legal = False
+
+                for df, dc in direcciones:
+                    f = fila_orig + df
+                    c = col_orig + dc
+                    fichas_enemigas_vistas = 0
+                    while 0 <= f < 8 and 0 <= c < 8 and s[f * 8 + c] == -j:
+                        fichas_enemigas_vistas += 1
+                        f += df
+                        c += dc
+                    if fichas_enemigas_vistas > 0 and 0 <= f < 8 and 0 <= c < 8 and s[f * 8 + c] == j:
+                        es_legal = True
+                        break
+
+                if es_legal:
+                    jugadas.append(pos)
+
+        return jugadas if jugadas else [None]
 
     def sucesor(self, s, a, j):
         s = list(s[:])
