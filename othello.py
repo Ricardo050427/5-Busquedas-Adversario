@@ -15,8 +15,8 @@ El estado se va a representar como una lista de 64 elementos, tal que
 y cada elemento puede ser 0, 1 o -1, donde 0 es vacío, 1 es una ficha del
 jugador 1 y -1 es una ficha del jugador 2.
 
-Las acciones son poner una ficha en una casilla, que se representa como 1
-o -1.
+Las acciones son poner una ficha en una casilla que flanquee al menos una
+ficha del rival que estara en una casilla del 0 al 63.
 
 El estado terminal es cuando ningun jugadpr puede mover y gana quien en ese
 momento tenga mas fichas en su tablero.
@@ -72,10 +72,11 @@ class Othello(js.JuegoZT2):
 
     def sucesor(self, s, a, j):
         s = list(s[:])
-        for i in range(5, -1, -1):
-            if s[a + 7 * i] == 0:
-                s[a + 7 * i] = j
-                break
+        """
+        si la accion es none simplemente se devuelve el tablero igual
+        si no, crear copia y poner ficha en la accion elegida, despues
+        checar las 8 direcciones e ir guardando las posiciones
+        """
         return tuple(s)
 
     def ganancia(self, s):
