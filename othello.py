@@ -91,7 +91,14 @@ class Othello(js.JuegoZT2):
     def terminal(self, s):
         if 0 not in s:
             return True
-        return self.ganancia(s) != 0
+
+        juego_negras = self.jugadas_legales(s, 1)
+        juego_blancas = self.jugadas_legales(s, -1)
+
+        if juego_blancas == [None] and juego_negras == [None]:
+            return True
+
+        return False
 
 
 class InterfaceOthello(js.JuegoInterface):
@@ -101,15 +108,6 @@ class InterfaceOthello(js.JuegoInterface):
         para mostrar el estado de forma más amigable
 
         """
-        simbolos = {1: 'X', -1: 'O', 0: ' '}
-        print('\n  0   1   2   3   4   5   6 ')
-        print('╔═══╦═══╦═══╦═══╦═══╦═══╦═══╗')
-        for i in range(6):
-            fila = [simbolos[x] for x in s[7 * i: 7 * (i + 1)]]
-            print('║ ' + ' ║ '.join(fila) + ' ║')
-            if i < 5:
-                print('╠═══╬═══╬═══╬═══╬═══╬═══╬═══╣')
-        print('╚═══╩═══╩═══╩═══╩═══╩═══╩═══╝\n')
 
     def muestra_ganador(self, g):
         """
@@ -130,82 +128,6 @@ class InterfaceOthello(js.JuegoInterface):
         while jugada not in jugadas:
             jugada = int(input("Jugada: "))
         return jugada
-
-
-def ordena_centro(jugadas, jugador):
-    """
-    Ordena las jugadas de acuerdo a la distancia al centro
-    """
-    return sorted(jugadas, key=lambda x: abs(x - 3))
-
-
-def evalua_ventana(ventana):
-    """
-    Recibe una lista de 4 casillas y
-    devuelve un valor decimal basado en qué tan prometedora es.
-    """
-    score = 0
-    fichas_p1 = ventana.count(1)  # Fichas del jugador 1
-    fichas_p2 = ventana.count(-1)  # Fichas del jugador 2
-    vacias = ventana.count(0)  # Casillas vacías
-
-    # Evaluación para el jugador 1
-    if fichas_p1 == 3 and vacias == 1:
-        score += 0.1
-    elif fichas_p1 == 2 and vacias == 2:
-        score += 0.02
-
-    # Penalización si el jugador 2 tiene amenaza
-    if fichas_p2 == 3 and vacias == 1:
-        score -= 0.1
-    elif fichas_p2 == 2 and vacias == 2:
-        score -= 0.02
-
-    return score
-
-
-def evalua_3con(s):
-    """
-    Evalua el estado s para el jugador 1.
-    Extrae todas las combinaciones posibles de 4 casillas y las evalúa.
-    """
-    score = 0
-
-    # Preferencia por la columna central (índices: 3, 10, 17, 24, 31, 38)
-    columna_central = [s[3 + 7 * i] for i in range(6)]
-    score += columna_central.count(1) * 0.05
-    score -= columna_central.count(-1) * 0.05
-
-    # Extraemos ventanas Horizontales (6 filas, 4 ventanas por fila)
-    for i in range(6):
-        for j in range(4):
-            ventana = [s[7 * i + j + k] for k in range(4)]
-            score += evalua_ventana(ventana)
-
-    # Extraemos ventanas Verticales (7 columnas, 3 ventanas por col)
-    for i in range(7):
-        for j in range(3):
-            ventana = [s[i + 7 * (j + k)] for k in range(4)]
-            score += evalua_ventana(ventana)
-
-    # Extraemos ventanas Diagonales hacia abajo (\)
-    for i in range(4):
-        for j in range(3):
-            ventana = [s[i + 7 * j + 8 * k] for k in range(4)]
-            score += evalua_ventana(ventana)
-
-    # Extraemos ventanas Diagonales hacia arriba (/)
-    for i in range(4):
-        for j in range(3):
-            ventana = [s[i + 7 * j + 3 + 6 * k] for k in range(4)]
-            score += evalua_ventana(ventana)
-
-    # Seguro contra desbordamiento (Mantenemos el score entre -0.99 y 0.99)
-    # Dejamos el 1.0 y -1.0 exactos para cuando la función ganancia() detecte victoria real
-    if score >= 1.0: return 0.99
-    if score <= -1.0: return -0.99
-
-    return score
 
 
 if __name__ == '__main__':
