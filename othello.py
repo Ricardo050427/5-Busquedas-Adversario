@@ -134,41 +134,78 @@ class Othello(js.JuegoZT2):
 class InterfaceOthello(js.JuegoInterface):
     def muestra_estado(self, s):
         """
-        Muestra el estado del juego, se puede usar la función pprint_Othello
-        para mostrar el estado de forma más amigable
-
+        Dibuja el tablero de 8x8 usando caracteres ASCII de dibujo de cajas.
+        Las filas van del 0 al 7 y las columnas del 0 al 7 para ubicar el índice 1D.
         """
+        simbolos = {1: 'X', -1: 'O', 0: ' '}
+        print('\n    0   1   2   3   4   5   6   7 ')
+        print('  ╔═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╗')
+
+        for i in range(8):
+            fila = [simbolos[x] for x in s[8 * i: 8 * (i + 1)]]
+            print(f'{i} ║ ' + ' ║ '.join(fila) + ' ║')
+            if i < 7:
+                print('  ╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣')
+        print('  ╚═══╩═══╩═══╩═══╩═══╩═══╩═══╩═══╝\n')
 
     def muestra_ganador(self, g):
-        """
-        Muestra el ganador del juego, se puede usar " XO"[g] para mostrar el
-        ganador de forma más amigable
-
-        """
-        if g != 0:
-            print("Gana el jugador " + " XO"[g])
+        if g == 1:
+            print("¡Fin del juego! Gana el Jugador 1 (X)")
+        elif g == -1:
+            print("¡Fin del juego! Gana el Jugador 2 (O)")
         else:
-            print("Un asqueroso empate")
+            print("¡Fin del juego! Es un empate perfecto.")
 
     def jugador_humano(self, s, j):
-        print("Jugador", " XO"[j])
-        jugadas = list(self.juego.jugadas_legales(s, j))
+        simbolo = 'X' if j == 1 else 'O'
+        print(f"\nTurno del Jugador {j} ({simbolo})")
+
+        jugadas = self.juego.jugadas_legales(s, j)
+
+        if jugadas == [None]:
+            input("No tienes movimientos legales. Presiona ENTER para pasar el turno...")
+            return None
+
+        print('\n    0   1   2   3   4   5   6   7 ')
+        print('  ╔═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╗')
+        for i in range(8):
+            fila_str = []
+            for col in range(8):
+                idx = 8 * i + col
+                if s[idx] == 1:
+                    fila_str.append(' X ')
+                elif s[idx] == -1:
+                    fila_str.append(' O ')
+                elif idx in jugadas:
+                    fila_str.append(f'{idx:^3}')
+                else:
+                    fila_str.append('   ')
+
+            print(f'{i} ║' + '║'.join(fila_str) + '║')
+            if i < 7:
+                print('  ╠═══╬═══╬═══╬═══╬═══╬═══╬═══╬═══╣')
+        print('  ╚═══╩═══╩═══╩═══╩═══╩═══╩═══╩═══╝\n')
+
+        jugada = -1
         print("Jugadas legales:", jugadas)
-        jugada = None
         while jugada not in jugadas:
-            jugada = int(input("Jugada: "))
+            try:
+                jugada = int(input("Ingresa el índice de tu jugada (0-63): "))
+            except ValueError:
+                print("Por favor, ingresa un número válido.")
+
         return jugada
 
 
 if __name__ == '__main__':
 
     cfg = {
-        "Jugador 1": "Humano",  # Puede ser "Humano", "Aleatorio", "Negamax", "Tiempo"
-        "Jugador 2": "Negamax",  # Puede ser "Humano", "Aleatorio", "Negamax", "Tiempo"
-        "profundidad máxima": 5,
-        "tiempo": 10,
-        "ordena": ordena_centro,  # Puede ser None o una función f(jugadas, j) -> lista de jugadas ordenada
-        "evalua": evalua_3con  # Puede ser None o una función f(estado) -> número entre -1 y 1
+        "Jugador 1": "Humano",
+        "Jugador 2": "Aleatorio",
+        "profundidad máxima": 4,
+        "tiempo": 5,
+        "ordena": None,
+        "evalua": None
     }
 
 
@@ -189,15 +226,16 @@ if __name__ == '__main__':
             raise ValueError("Jugador no reconocido")
 
 
+    print("═════════════════════════════════")
+    print("      OTHELLO / REVERSI          ")
+    print("═════════════════════════════════")
+    print(f"Jugador 1 (X): {cfg['Jugador 1']}")
+    print(f"Jugador 2 (O): {cfg['Jugador 2']}\n")
+
     interfaz = InterfaceOthello(
         Othello(),
         jugador1=jugador_cfg(cfg["Jugador 1"]),
         jugador2=jugador_cfg(cfg["Jugador 2"])
     )
-
-    print("El Juego del Conecta 4 ")
-    print("Jugador 1:", cfg["Jugador 1"])
-    print("Jugador 2:", cfg["Jugador 2"])
-    print()
 
     interfaz.juega()
