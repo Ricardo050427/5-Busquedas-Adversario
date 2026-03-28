@@ -71,13 +71,43 @@ class Othello(js.JuegoZT2):
         return jugadas if jugadas else [None]
 
     def sucesor(self, s, a, j):
-        s = list(s[:])
         """
-        si la accion es none simplemente se devuelve el tablero igual
-        si no, crear copia y poner ficha en la accion elegida, despues
-        checar las 8 direcciones e ir guardando las posiciones
+            Genera y devuelve el nuevo estado del tablero después de que el jugador 'j'
+            realiza la acción 'a'.
+
+            Esta función es pura (no modifica el tablero original). Crea un clon del
+            estado actual, coloca la nueva ficha en el índice 'a' y lanza rayos en las
+            8 direcciones para encontrar y voltear (cambiar de color) todas las fichas
+            enemigas que hayan quedado atrapadas (flanqueadas) bajo las reglas del Othello.
         """
-        return tuple(s)
+        if a is None:
+            return s
+
+        s_nuevo = list(s[:])
+        s_nuevo[a] = j
+        direcciones = [
+            (-1, -1), (-1, 0), (-1, 1),
+            (0, -1), (0, 1),
+            (1, -1), (1, 0), (1, 1)
+        ]
+        fila_orig = a // 8
+        col_orig = a % 8
+
+        for df, dc in direcciones:
+            f = fila_orig + df
+            c = col_orig + dc
+            piezas_a_voltear = []
+
+            while 0 <= f < 8 and 0 <= c < 8 and s[f * 8 + c] == -j:
+                piezas_a_voltear.append(f * 8 + c)
+                f += df
+                c += dc
+
+            if len(piezas_a_voltear) > 0 and 0 <= f < 8 and 0 <= c < 8 and s[f * 8 + c] == j:
+                for pos_enemiga in piezas_a_voltear:
+                    s_nuevo[pos_enemiga] = j
+
+        return tuple(s_nuevo)
 
     def ganancia(self, s):
         """
