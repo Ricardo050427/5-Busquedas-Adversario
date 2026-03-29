@@ -110,9 +110,6 @@ class Othello(js.JuegoZT2):
         return tuple(s_nuevo)
 
     def ganancia(self, s):
-        """
-        fixme posible ganancia
-        """
         suma_total = sum(s)
         if suma_total > 0: return 1
         if suma_total < 0: return -1
@@ -137,7 +134,7 @@ class InterfaceOthello(js.JuegoInterface):
         Dibuja el tablero de 8x8 usando caracteres ASCII de dibujo de cajas.
         Las filas van del 0 al 7 y las columnas del 0 al 7 para ubicar el índice 1D.
         """
-        simbolos = {1: 'X', -1: 'O', 0: ' '}
+        simbolos = {1: '●', -1: '○', 0: ' '}
         print('\n    0   1   2   3   4   5   6   7 ')
         print('  ╔═══╦═══╦═══╦═══╦═══╦═══╦═══╦═══╗')
 
@@ -157,7 +154,7 @@ class InterfaceOthello(js.JuegoInterface):
             print("¡Fin del juego! Es un empate perfecto.")
 
     def jugador_humano(self, s, j):
-        simbolo = 'X' if j == 1 else 'O'
+        simbolo = '●' if j == 1 else '○'
         print(f"\nTurno del Jugador {j} ({simbolo})")
 
         jugadas = self.juego.jugadas_legales(s, j)
@@ -173,9 +170,9 @@ class InterfaceOthello(js.JuegoInterface):
             for col in range(8):
                 idx = 8 * i + col
                 if s[idx] == 1:
-                    fila_str.append(' X ')
+                    fila_str.append(' ● ')
                 elif s[idx] == -1:
-                    fila_str.append(' O ')
+                    fila_str.append(' ○ ')
                 elif idx in jugadas:
                     fila_str.append(f'{idx:^3}')
                 else:
@@ -196,16 +193,64 @@ class InterfaceOthello(js.JuegoInterface):
 
         return jugada
 
+pesos = [
+        100, -20, 10, 5, 5, 10, -20, 100,
+        -20, -50, -2, -2, -2, -2, -50, -20,
+        10, -2, -1, -1, -1, -1, -2, 10,
+        5, -2, -1, -1, -1, -1, -2, 5,
+        5, -2, -1, -1, -1, -1, -2, 5,
+        10, -2, -1, -1, -1, -1, -2, 10,
+        -20, -50, -2, -2, -2, -2, -50, -20,
+        100, -20, 10, 5, 5, 10, -20, 100
+    ]
+
+def evalua_othello(s):
+    """
+    Evalúa el tablero 's' calculando la ventaja posicional del Jugador 1 (Blancas/●).
+    Devuelve un valor entre -1.0 y 1.0 requerido por el algoritmo Minimax.
+    """
+    score = 0.0
+
+    # Iteramos sobre las 64 casillas del tablero
+    for i in range(64):
+        if s[i] != 0:
+            # Multiplicamos la ficha (1 o -1) por el peso de la casilla
+            # Si el Jugador 1 tiene una esquina, suma 1 * 100 = +100
+            # Si el Jugador 2 (-1) tiene una esquina, suma -1 * 100 = -100 (malo para el Jugador 1)
+            score += s[i] * pesos[i]
+
+    # El puntaje máximo de la matriz es aprox +400/-400.
+    # Dividimos entre un número seguro como 500.0 para normalizarlo.
+    score_normalizado = score / 500.0
+
+    # Seguros por si el puntaje se desborda
+    if score_normalizado >= 1.0: return 0.99
+    if score_normalizado <= -1.0: return -0.99
+
+    return score_normalizado
+
+
+def ordena_othello(jugadas, j):
+    """
+    Ordena las jugadas legales dándole prioridad a las casillas que tienen
+    un mayor valor en la matriz de pesos posicionales.
+
+    Como el jugador 'j' puede ser 1 (quiere números positivos) o -1
+    (quiere números negativos), multiplicamos el peso por 'j' para que
+    el sort siempre ponga lo mejor para el jugador actual al principio.
+    """
+    # Ordenamos de mayor a menor (reverse=True) basado en el peso de la casilla
+    return sorted(jugadas, key=lambda a: pesos[a] * j, reverse=True)
 
 if __name__ == '__main__':
 
     cfg = {
         "Jugador 1": "Humano",
-        "Jugador 2": "Aleatorio",
+        "Jugador 2": "Tiempo",
         "profundidad máxima": 4,
         "tiempo": 5,
         "ordena": None,
-        "evalua": None
+        "evalua": evalua_othello
     }
 
 
@@ -219,7 +264,7 @@ if __name__ == '__main__':
                 ordena=cfg["ordena"], d=cfg["profundidad máxima"], evalua=cfg["evalua"]
             )
         elif cadena == "Tiempo":
-            return minimax.JugadorNegamaxIterativo(
+            return minimax.JugadorMinimaxIterativo(
                 tiempo=cfg["tiempo"], ordena=cfg["ordena"], evalua=cfg["evalua"]
             )
         else:
